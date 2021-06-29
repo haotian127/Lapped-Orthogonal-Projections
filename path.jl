@@ -1,5 +1,6 @@
 cd(@__DIR__); include("helper.jl")
 using MultiscaleGraphSignalTransforms, Plots, LightGraphs, JLD, MarketData
+import WaveletsExt: wiggle
 
 ## Build a path graph
 N = length(f)
@@ -93,13 +94,16 @@ current()
 
 ## top 16 LP-HGLET
 important_idx = sortperm(dvec_lphglet[:].^2; rev = true)
-plot(layout = Plots.grid(5, 6), size = (1000, 600))
-for i in 31:60
+# plot(layout = Plots.grid(5, 6), size = (1000, 600))
+IB = zeros(N, 32)
+for i in 1:32
     dr, dc = BS_lphglet.levlist[important_idx[i]]
     w, _ = LPHGLET_Synthesis(reshape(spike(important_idx[i], N), (N, 1)),
                              GP, BS_lphglet, G_Sig; method = :L, ϵ = 0.3)
     w .*= (maximum(w) > -minimum(w)) * 2 - 1
-    j, k, l = HGLET_jkl(GP, dr, dc)
-    plot!(w, lw = 1, c = :black, legend = false, frame = :none, subplot = i - 30)
+    IB[:, i] = w
+    # j, k, l = HGLET_jkl(GP, dr, dc)
+    # plot!(w, lw = 1, c = :black, legend = false, frame = :none, subplot = i - 30)
 end
-current()
+# current()
+wiggle(IB; sc = 0.75)
