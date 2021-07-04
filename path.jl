@@ -1,9 +1,9 @@
 cd(@__DIR__); include("helper.jl")
-using MultiscaleGraphSignalTransforms, Plots, LightGraphs, JLD, MarketData
+using MultiscaleGraphSignalTransforms, Plots, LightGraphs, JLD, MarketData, Statistics
 import WaveletsExt: wiggle
 
 ## Build a path graph
-N = length(f)
+N = 328
 G = path_graph(N)
 X = zeros(N, 2); X[:, 1] = 1:N;
 W = 1.0 * adjacency_matrix(G)
@@ -29,7 +29,8 @@ dataset = yahoo(:AAPL, YahooOpt(period1 = start, period2 = stop))
 f = values(dataset[:Volume])
 f .-= mean(f)
 G_Sig.f = reshape(f, (N, 1))
-plot(f, lw = 2, c = :black, legend = false, frame = :box)
+plt = plot(f, lw = 2, c = :black, legend = false, frame = :box, title = "AAPL volume with mean 0")
+savefig(plt, "figs/Path328_AAPL_Volume_signal.png")
 
 ##
 ############# VM_NGWP
@@ -47,8 +48,8 @@ dmatrixlpH, _ = LPHGLET_Analysis_All(G_Sig, GP; ϵ = 0.3)
 dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixlpH, costfun = 1)
 
 #############
-approx_curves_now(G_Sig, GP, GP_dual, VM_NGWP, LP_NGWP)
-
+plt = approx_curves_now(G_Sig, GP, GP_dual, VM_NGWP, LP_NGWP)
+savefig(plt, "figs/Path328_AAPL_Volume_approx.png")
 
 
 # ## top VM-NGWP
