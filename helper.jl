@@ -22,7 +22,7 @@ function approx_errors(DVEC::Vector{Vector{Float64}}; frac::Float64 = 0.50, ϵ =
 end
 
 
-function approx_curves_now(G_Sig, GP, GP_dual, VM_NGWP, LP_NGWP)
+function approx_curves_now(G_Sig, GP, GP_dual, VM_NGWP, LP_NGWP; frac = 0.5)
     ############# VM_NGWP
     dmatrix_VM = ngwp_analysis(G_Sig, VM_NGWP)
     dvec_vm_ngwp, BS_vm_ngwp = ngwp_bestbasis(dmatrix_VM, GP_dual)
@@ -54,7 +54,7 @@ function approx_curves_now(G_Sig, GP, GP_dual, VM_NGWP, LP_NGWP)
     dvec_eghwt, BS_eghwt = ghwt_tf_bestbasis(dmatrix, GP)
     DVEC = [dvec_Laplacian[:], dvec_hglet[:], dvec_lphglet[:], dvec_haar[:], dvec_walsh[:],
             dvec_c2f[:], dvec_f2c[:], dvec_eghwt[:], dvec_vm_ngwp[:], dvec_lp_ngwp[:]]
-    approx_errors(DVEC; frac = 0.5);
+    approx_errors(DVEC; frac = frac);
     plt = plot!(xguidefontsize = 14, yguidefontsize = 14, legendfontsize = 11)
     return plt
 end
