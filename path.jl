@@ -23,14 +23,16 @@ jmax = size(GP_dual.rs, 2) - 1  # zero-indexed
 @time LP_NGWP = lp_ngwp(𝚽, Gstar_Sig.W, GP_dual; ϵ = 0.3)
 
 ## graph signal: (:O, :High), (:SPY, :High), (:AMZN, :Volume)
+# sym, tp = ("O", "High")
+sym, tp = ("AMZN", "Volume")
 start = DateTime(2020, 1, 1)
 stop = DateTime(2021, 1, 1)
-dataset = yahoo(:AMZN, YahooOpt(period1 = start, period2 = stop))
-f = values(dataset[:Volume])
+dataset = yahoo(sym, YahooOpt(period1 = start, period2 = stop))
+f = values(dataset[tp])
 f .-= mean(f)
 G_Sig.f = reshape(f, (N, 1))
-plt = plot(f, lw = 2, c = :black, legend = false, frame = :box, title = "SPY high with mean 0")
-# savefig(plt, "figs/Path328_AAPL_Volume_signal.png")
+plt = plot(f, lw = 2, c = :black, legend = false, frame = :box, title = "Stock '$(sym)' daily $(lowercase(tp)) prices with mean 0")
+savefig(plt, "figs/Path253_$(sym)_$(tp)_signal.png")
 
 ##
 ############# VM_NGWP
@@ -49,12 +51,12 @@ dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixlpH, co
 
 #############
 plt = approx_curves_now(G_Sig, GP, GP_dual, VM_NGWP, LP_NGWP; frac = 0.3)
-# savefig(plt, "figs/Path328_AAPL_Volume_approx.png")
+savefig(plt, "figs/Path253_$(sym)_$(tp)_approx.png")
 
 
 ## top VM-NGWP
 important_idx = sortperm(dvec_vm_ngwp[:].^2; rev = true)
-plot(layout = Plots.grid(6, 8), size = (1200, 600))
+plot(layout = Plots.grid(8, 6), size = (900, 800))
 for i in 1:48
     dr, dc = BS_vm_ngwp.levlist[important_idx[i]]
     w = VM_NGWP[dr, dc, :]
@@ -64,11 +66,12 @@ for i in 1:48
           ylim = [minimum(w) * 1.5, maximum(w) * 1.5])
     # title = "ψ^($(j))_{$(k), $(l)}", titlefontsize = 6,
 end
-current()
+plt = current()
+savefig(plt, "figs/Path253_$(sym)_$(tp)_VM_NGWP_top48.png")
 
 ## top LP-NGWP
 important_idx = sortperm(dvec_lp_ngwp[:].^2; rev = true)
-plot(layout = Plots.grid(6, 8), size = (1200, 600))
+plot(layout = Plots.grid(8, 6), size = (900, 800))
 for i in 1:48
     dr, dc = BS_lp_ngwp.levlist[important_idx[i]]
     w = LP_NGWP[dr, dc, :]
@@ -78,11 +81,12 @@ for i in 1:48
           ylim = [minimum(w) * 1.5, maximum(w) * 1.5])
     # title = "ψ^($(j))_{$(k), $(l)}", titlefontsize = 6,
 end
-current()
+plt = current()
+savefig(plt, "figs/Path253_$(sym)_$(tp)_LP_NGWP_top48.png")
 
 ## top HGLET
 important_idx = sortperm(dvec_hglet[:].^2; rev = true)
-plot(layout = Plots.grid(6, 8), size = (1200, 600))
+plot(layout = Plots.grid(8, 6), size = (900, 800))
 # IB = zeros(N, 32)
 for i in 1:48
     dr, dc = BS_hglet.levlist[important_idx[i]]
@@ -94,12 +98,12 @@ for i in 1:48
     plot!(w, lw = 1, c = :black, legend = false, frame = :none, subplot = i,
           ylim = [minimum(w) * 1.5, maximum(w) * 1.5])
 end
-current()
-# wiggle(IB; sc = 0.75)
+plt = current()
+savefig(plt, "figs/Path253_$(sym)_$(tp)_HGLET_top48.png")
 
 ## top LP-HGLET
 important_idx = sortperm(dvec_lphglet[:].^2; rev = true)
-plot(layout = Plots.grid(6, 8), size = (1200, 600))
+plot(layout = Plots.grid(8, 6), size = (900, 800))
 # IB = zeros(N, 32)
 for i in 1:48
     dr, dc = BS_lphglet.levlist[important_idx[i]]
@@ -111,5 +115,15 @@ for i in 1:48
     plot!(w, lw = 1, c = :black, legend = false, frame = :none, subplot = i,
           ylim = [minimum(w) * 1.5, maximum(w) * 1.5])
 end
-current()
-# wiggle(IB; sc = 0.75)
+plt = current()
+savefig(plt, "figs/Path253_$(sym)_$(tp)_LP_HGLET_top48.png")
+
+
+## partition pattern
+j = 3
+shading = zeros(N)
+regioncount = count(!iszero, GP.rs[:,j]) - 1
+for k in 1:regioncount
+    shading += k .* χ(GP.rs[k, j]:(GP.rs[k+1, j] - 1), N)
+end
+scatter_gplot(X; marker = shading); plot!(frame = :none, cbar = false, size = (600, 100))
