@@ -1,7 +1,8 @@
 function approx_errors(
     DVEC::Vector{Vector{Float64}};
     frac::Float64 = 0.50,
-    ϵ = 0.3,
+    ϵh = 0.4,
+    ϵn = 0.2
 )
     plot(
         xaxis = "Fraction of Coefficients Retained",
@@ -10,14 +11,14 @@ function approx_errors(
     T = [
         "eigenbasis-L",
         "HGLET",
-        "LP-HGLET(ϵ=$(ϵ))",
+        "LP-HGLET(ϵ=$(ϵh))",
         "Haar",
         "Walsh",
         "GHWT_c2f",
         "GHWT_f2c",
         "eGHWT",
         "VM-NGWP",
-        "LP-NGWP(ϵ=$(ϵ))",
+        "LP-NGWP(ϵ=$(ϵn))",
     ]
     L = [
         (:dot, :red),
@@ -31,15 +32,13 @@ function approx_errors(
         (:solid, :black),
         (:solid, :orange),
     ]
+    N = length(DVEC[1])
     for i = 1:length(DVEC)
         if i in [1, 4, 5, 6, 7, 8]
             continue
         end
         dvec = DVEC[i]
-        N = length(dvec)
-        dvec_norm = norm(dvec, 2)
-        dvec_sort = sort(dvec .^ 2) # the smallest first
-        er = max.(sqrt.(reverse(cumsum(dvec_sort))) / dvec_norm, 1e-12)
+        er = dvec2err(dvec)
         p = Int64(floor(frac * N)) + 1 # upper limit
         plot!(
             frac * (0:(p-1)) / (p - 1),
@@ -60,15 +59,17 @@ function approx_curves_now(
     Gstar_Sig,
     GP,
     GP_dual,
-    VM_NGWP;
+    VM_NGWP,
+    LP_NGWP;
     frac = 0.5,
-    ϵ = 0.3,
+    ϵh = 0.4,
+    ϵn = 0.2
 )
     ############# VM_NGWP
     dmatrix_VM = ngwp_analysis(G_Sig, VM_NGWP)
     dvec_vm_ngwp, BS_vm_ngwp = ngwp_bestbasis(dmatrix_VM, GP_dual)
     ############# LP_NGWP
-    dmatrix_LP = lp_ngwp_analysis(G_Sig, 𝚽, Gstar_Sig.W, GP_dual; ϵ = ϵ)
+    dmatrix_LP = ngwp_analysis(G_Sig, LP_NGWP)
     dvec_lp_ngwp, BS_lp_ngwp = ngwp_bestbasis(dmatrix_LP, GP_dual)
     ############# Laplacian L
     dvec_Laplacian = 𝚽' * G_Sig.f
@@ -78,7 +79,7 @@ function approx_curves_now(
     dvec_hglet, BS_hglet, _ =
         HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixH, costfun = 1)
     ############# LP-HGLET
-    dmatrixlpH, _ = LPHGLET_Analysis_All(G_Sig, GP; ϵ = ϵ)
+    dmatrixlpH, _ = LPHGLET_Analysis_All(G_Sig, GP; ϵ = ϵh)
     dvec_lphglet, BS_lphglet, _ =
         HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixlpH, costfun = 1)
     ############# GHWT dictionaries
@@ -107,7 +108,7 @@ function approx_curves_now(
         dvec_vm_ngwp[:],
         dvec_lp_ngwp[:],
     ]
-    approx_errors(DVEC; frac = frac, ϵ = ϵ)
+    approx_errors(DVEC; frac = frac, ϵh = ϵh, ϵn = ϵn)
     plt = plot!(xguidefontsize = 14, yguidefontsize = 14, legendfontsize = 11)
     return plt
 end
