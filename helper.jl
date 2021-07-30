@@ -57,7 +57,6 @@ end
 function approx_curves_now(
     G_Sig,
     Gstar_Sig,
-    GP,
     GP_dual,
     VM_NGWP,
     LP_NGWP;
@@ -145,4 +144,9 @@ function export_lp_err_curves(
     end
 
     return err_curves_lphglet, err_curves_lpngwp
+end
+
+
+function gen_gaussian(X, μ, σ)
+    1 / (σ * sqrt(2*π)) * exp.(-0.5 * sum((X .- μ).^2, dims = 2)[:] ./ σ^2)
 end
