@@ -24,21 +24,17 @@ GP_dual = partition_tree_fiedler(Gstar_Sig; swapRegion = false)
 jmax = size(GP_dual.rs, 2) - 1  # zero-indexed
 
 @time VM_NGWP = vm_ngwp(𝚽, GP_dual)
-@time LP_NGWP = lp_ngwp(𝚽, Gstar_Sig.W, GP_dual; ϵ = 0.2)
+@time LP_NGWP = lp_ngwp(𝚽, Gstar_Sig.W, GP_dual; ϵ = 0.4)
 
 ##
 using Random
 Random.seed!(1234)
-μ1, σ1 = [-79.45 43.71], 0.05
-μ2, σ2 = [-79.37 43.72], 0.05
-μ3, σ3 = [-79.25 43.8], 0.01
-g1 = gen_gaussian(X, μ1, σ1)
-g2 = gen_gaussian(X, μ2, σ2)
-g3 = gen_gaussian(X, μ3, σ3)
-f = zeros(N)
-f[X[:, 1] .< -79.41] = g1[X[:, 1] .< -79.41] .+ 1
-f[X[:, 1] .>= -79.41] = g2[X[:, 1] .>= -79.41]
-f += 0.25 * randn(N)
+μ, σ = [-79.4 43.71], 0.06
+g = gen_gaussian(X, μ, σ)
+P1, P2 = [-79.55 43.6], [-79.2 43.83]
+g[line1side(X, P1, P2) .> 0] .-= 5
+f = g + 1.5 * randn(N)
+println(20 * log10(norm(f)/norm(f - g)))
 # f .-= mean(f)
 G_Sig.f = reshape(f, (N, 1))
 gplot(A, X; width = 1);
@@ -46,5 +42,5 @@ signal_plt = scatter_gplot!(X; marker = f, plotOrder = :s2l, ms = 3)
 savefig(signal_plt, "figs/Toronto_MG.png"); display(signal_plt)
 
 ##
-plt = approx_curves_now(G_Sig, Gstar_Sig, GP_dual, VM_NGWP, LP_NGWP; ϵn = 0.2, ϵh = 0.4, frac = 0.3)
+plt = approx_curves_now(G_Sig, Gstar_Sig, GP_dual, VM_NGWP, LP_NGWP; ϵn = 0.4, ϵh = 0.05, frac = 0.5)
 savefig(plt, "figs/Toronto_MG_approx.png"); display(plt)

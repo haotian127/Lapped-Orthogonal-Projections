@@ -150,3 +150,13 @@ end
 function gen_gaussian(X, μ, σ)
     1 / (σ * sqrt(2*π)) * exp.(-0.5 * sum((X .- μ).^2, dims = 2)[:] ./ σ^2)
 end
+
+
+function line1side(X, P1, P2)
+    x = X[:, 1]
+    y = X[:, 2]
+    x1, y1 = P1
+    x2, y2 = P2
+    l = (y2 - y1) * (x .- x1) .- (x2 - x1) * (y .- y1)
+    return l
+end
