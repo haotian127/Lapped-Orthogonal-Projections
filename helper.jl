@@ -57,6 +57,7 @@ end
 function approx_curves_now(
     G_Sig,
     Gstar_Sig,
+    GP,
     GP_dual,
     VM_NGWP,
     LP_NGWP;
@@ -73,14 +74,13 @@ function approx_curves_now(
     ############# Laplacian L
     dvec_Laplacian = 𝚽' * G_Sig.f
     ############# HGLET
-    GP = partition_tree_fiedler(G_Sig)
     dmatrixH, _, _ = HGLET_Analysis_All(G_Sig, GP)
-    dvec_hglet, BS_hglet, _ =
-        HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixH, costfun = 1)
+    dvec_hglet, BS_hglet, _ = HGLET_GHWT_BestBasis(GP; dmatrixH = dmatrixH, cfspec = 1.0)
     ############# LP-HGLET
     dmatrixlpH, _ = LPHGLET_Analysis_All(G_Sig, GP; ϵ = ϵh)
-    dvec_lphglet, BS_lphglet, _ =
-        HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixlpH, costfun = 1)
+    dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP; dmatrixH = dmatrixlpH, cfspec = 1.0)
+    # dmatrixlpH = LPHGLET_DST4_Analysis(G_Sig, GP; ϵ = ϵh)
+    # dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP; dmatrixH = dmatrixlpH, cfspec = 1.0)
     ############# GHWT dictionaries
     dmatrix = ghwt_analysis!(G_Sig, GP = GP)
     ############# Haar

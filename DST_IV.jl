@@ -12,7 +12,6 @@ G_Sig = GraphSig(W, xy = X)
 GP = partition_tree_fiedler(G_Sig; swapRegion = false)
 
 # Uj = unitary_folding_operator(W, GP; ϵ = 0.3, J = 1)
-fp
 
 @time HGLET_dic = HGLET_DST4_dictionary(GP, G_Sig)
 @time LPHGLET_dic = LPHGLET_DST4_dictionary(GP, G_Sig; ϵ = 0.3)

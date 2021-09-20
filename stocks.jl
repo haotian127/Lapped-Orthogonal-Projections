@@ -46,13 +46,16 @@ dvec_lp_ngwp, BS_lp_ngwp = ngwp_bestbasis(dmatrix_LP, GP_dual)
 ############# HGLET
 GP = partition_tree_fiedler(G_Sig)
 dmatrixH, _, _ = HGLET_Analysis_All(G_Sig, GP)
-dvec_hglet, BS_hglet, _ = HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixH, costfun = 1)
+dvec_hglet, BS_hglet, _ = HGLET_GHWT_BestBasis(GP; dmatrixH = dmatrixH, cfspec = 1.0)
 ############# LP-HGLET
-dmatrixlpH, _ = LPHGLET_Analysis_All(G_Sig, GP; ϵ = 0.4)
-dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixlpH, costfun = 1)
+# dmatrixlpH, _ = LPHGLET_Analysis_All(G_Sig, GP; ϵ = 0.4)
+# dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP, dmatrixH = dmatrixlpH, costfun = 1)
+dmatrixlpH = LPHGLET_DST4_Analysis(G_Sig, GP; ϵ = 0.4)
+dvec_lphglet, BS_lphglet, _ = HGLET_GHWT_BestBasis(GP; dmatrixH = dmatrixlpH, cfspec = 1.0)
+
 
 #############
-plt = approx_curves_now(G_Sig, Gstar_Sig, GP, GP_dual, VM_NGWP, LP_NGWP; frac = 0.5)
+plt = approx_curves_now(G_Sig, Gstar_Sig, GP, GP_dual, VM_NGWP, LP_NGWP; frac = 0.5, ϵh = 0.4)
 savefig(plt, "figs/Path253_$(sym)_$(tp)_approx.png")
 
 
